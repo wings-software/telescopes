@@ -8,7 +8,7 @@ DOCKER_IMAGE = banzaicloud/telescopes
 
 # Build variables
 BUILD_DIR ?= build
-VERSION ?= $(shell cat build.properties | grep 'version=' | sed -e 's: *version=::g' | tr -d '\r\n')
+VERSION ?= $(shell cat version | grep 'version=' | sed -e 's: *version=::g' | tr -d '\r\n')
 COMMIT_HASH ?= $(shell git rev-parse --short HEAD 2>/dev/null)
 BRANCH ?= $(shell git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD)
 BUILD_DATE ?= $(shell date +%FT%T%z)
