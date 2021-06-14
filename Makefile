@@ -10,7 +10,7 @@ DOCKER_IMAGE = banzaicloud/telescopes
 BUILD_DIR ?= build
 VERSION ?= $(shell cat version | grep 'version=' | sed -e 's: *version=::g' | tr -d '\r\n')
 COMMIT_HASH ?= $(shell git rev-parse --short HEAD 2>/dev/null)
-BRANCH ?= $(shell git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD)
+BRANCH ?= $(shell git symbolic-ref -q --short HEAD)
 BUILD_DATE ?= $(shell date +%FT%T%z)
 LDFLAGS := -X main.version=${VERSION} -X main.commitHash=${COMMIT_HASH} -X main.buildDate=${BUILD_DATE} -X main.branch=${BRANCH}
 export CGO_ENABLED ?= 0
