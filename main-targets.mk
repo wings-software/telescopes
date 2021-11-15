@@ -38,7 +38,14 @@ endif
 	docker build --build-arg BUILD_DIR=${BUILD_DIR}/release --build-arg BINARY_NAME=${BINARY_NAME}-linux-amd64 -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f Dockerfile .
 ifeq (${DOCKER_LATEST}, 1)
 	docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+	# This command is ineffective somehow, as a workaround added it in 'docker-push' cmd
+	docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${GCR_IMAGE_LOCATION}
 endif
+
+.PHONY: docker-push
+docker-push: ## Push Docker image to GCR
+	docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${GCR_IMAGE_LOCATION}
+	docker push ${GCR_IMAGE_LOCATION}
 
 .PHONY: docker-debug
 docker-debug: ## Build a Docker image with remote debugging capabilities
