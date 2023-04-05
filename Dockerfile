@@ -24,7 +24,7 @@
 FROM us.gcr.io/platform-205701/ubi/ubi-go:latest AS builder
 ENV GOFLAGS="-mod=readonly"
 
-RUN yum update -y && yum install -y ca-certificates make git curl mercurial
+RUN microdnf update && microdnf install -y ca-certificates make git curl mercurial && microdnf clean all
 
 RUN mkdir -p /build
 WORKDIR /build
