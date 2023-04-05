@@ -1,9 +1,30 @@
 # build stage
-FROM golang:1.19.2-buster AS builder
+#FROM golang:1.19.2-buster AS builder
+#ENV GOFLAGS="-mod=readonly"
+#
+#RUN apt-get update && apt-get install -y ca-certificates make git curl mercurial
+#
+#RUN mkdir -p /build
+#WORKDIR /build
+#
+#COPY go.* /build/
+#RUN go mod download
+#
+#COPY . /build
+#RUN BINARY_NAME=telescopes make build-release
+#
+#FROM us.gcr.io/platform-205701/ubi/ubi-go:latest
+#USER root
+#
+#COPY --from=builder /build/build/release/telescopes /bin
+#
+#ENTRYPOINT ["/bin/telescopes"]
+#CMD ["/bin/telescopes"]
+#
+FROM us.gcr.io/platform-205701/ubi/ubi-go:latest AS builder
 ENV GOFLAGS="-mod=readonly"
 
 RUN apt-get update && apt-get install -y ca-certificates make git curl mercurial
-#RUN apk add --update --no-cache ca-certificates make git curl mercurial
 
 RUN mkdir -p /build
 WORKDIR /build
@@ -14,17 +35,10 @@ RUN go mod download
 COPY . /build
 RUN BINARY_NAME=telescopes make build-release
 
-# FROM alpine:3.14.0
-# FROM us.gcr.io/platform-205701/ubi/ubi-base:latest
-#FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6-854
 FROM us.gcr.io/platform-205701/ubi/ubi-go:latest
 USER root
-# RUN microdnf install yum
-# RUN apk add --update --no-cache ca-certificates tzdata bash curl
-# RUN yum install -y ca-certificates tzdata
 
 COPY --from=builder /build/build/release/telescopes /bin
 
 ENTRYPOINT ["/bin/telescopes"]
 CMD ["/bin/telescopes"]
-
