@@ -24,7 +24,7 @@
 FROM us.gcr.io/platform-205701/ubi/ubi-go:latest AS builder
 ENV GOFLAGS="-mod=readonly"
 
-RUN apt-get update && apt-get install -y ca-certificates make git curl mercurial
+RUN yum update -y && yum install -y ca-certificates make git curl mercurial
 
 RUN mkdir -p /build
 WORKDIR /build
