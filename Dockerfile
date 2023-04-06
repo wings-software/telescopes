@@ -26,7 +26,6 @@ ENV GOFLAGS="-mod=readonly"
 
 USER root
 RUN microdnf update && microdnf install -y ca-certificates make git curl && microdnf clean all
-USER default
 
 RUN mkdir -p /build
 WORKDIR /build
