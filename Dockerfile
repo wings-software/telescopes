@@ -25,7 +25,7 @@ FROM us.gcr.io/platform-205701/ubi/ubi-go:latest AS builder
 ENV GOFLAGS="-mod=readonly"
 
 USER root
-RUN microdnf update && microdnf install -y ca-certificates make git curl python3-pip && microdnf clean all
+RUN microdnf update && microdnf install -y ca-certificates make git curl python3-pip python3-devel && microdnf clean all
 RUN pip3 install mercurial
 USER default
 
@@ -45,4 +45,5 @@ COPY --from=builder /build/build/release/telescopes /bin
 
 ENTRYPOINT ["/bin/telescopes"]
 CMD ["/bin/telescopes"]
+
 
