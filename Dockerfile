@@ -25,8 +25,7 @@ FROM us.gcr.io/platform-205701/ubi/ubi-go:latest AS builder
 ENV GOFLAGS="-mod=readonly"
 
 USER root
-RUN microdnf update && microdnf install -y ca-certificates make git curl python3-pip python3-devel && microdnf clean all
-RUN pip3 install mercurial
+RUN microdnf update && microdnf install -y ca-certificates make git curl && microdnf clean all
 USER default
 
 RUN mkdir -p /build
