@@ -20,25 +20,21 @@ global:
     virtualService:
       gateways:
       hosts:
-# image pull secrets to use for every image
+      # image pull secrets to use for every image
   imagePullSecrets: []
-
 replicaCount: 1
-
 java:
   memory: "4096m"
   memoryLimit: "4096m"
-
 image:
   registry: docker.io
   repository: harness/telescopes-signed
   pullPolicy: IfNotPresent
-# Overrides the image tag whose default is the chart appVersion.
+  # Overrides the image tag whose default is the chart appVersion.
   tag: "10302"
   digest: ""
-# image pull secrets to use for telescopes image
+  # image pull secrets to use for telescopes image
   imagePullSecrets: []
-
 waitForInitContainer:
   image:
     registry: docker.io
@@ -46,68 +42,52 @@ waitForInitContainer:
     pullPolicy: IfNotPresent
     tag: "latest"
     digest: ""
-  # image pull secrets to use for helm-init-container image
+    # image pull secrets to use for helm-init-container image
     imagePullSecrets: []
-
 nameOverride: ""
 fullnameOverride: ""
-
 serviceAccount:
-  create: false
+  create: true
   annotations: {}
-  name: "harness-default"
-
+  name: ""
 podAnnotations: {}
 podLabels: {}
-
 podSecurityContext: {}
-
 securityContext: {}
-
 service:
   annotations: {}
   type: ClusterIP
   port: 9090
-
 virtualService:
   annotations: {}
-
 ingress:
   annotations: {}
   className: nginx
-
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPU: ""
   targetMemory: ""
-
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
-
 resources:
   limits:
     memory: "1Gi"
   requests:
     cpu: "512m"
     memory: "1Gi"
-
 # extraVolumes:
 #   - name: volume-test
 #     configMap:
 #       name: test-config
 #       # readOnly: true
 extraVolumes: []
-
 # extraVolumeMounts:
 #   - name: volume-test
 #     mountPath: /opt/harness/config
 extraVolumeMounts: []
-
 lifecycleHooks: {}
 # lifecycleHooks:
 #   postStart:
@@ -116,3 +96,6 @@ lifecycleHooks: {}
 #   preStop:
 #     exec:
 #       command:
+
+rbac:
+  rules: []
