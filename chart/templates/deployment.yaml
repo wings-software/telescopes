@@ -55,12 +55,6 @@ spec:
               port: 9090
             failureThreshold: 300
             periodSeconds: 1
-          command:
-          - "/bin/sh"
-          - "-ecx"
-          - |
-            /bin/telescopes \
-            --cloudinfo-address="http://cloud-info.{{ .Release.Namespace }}.svc.cluster.local:8082/api/v1"
         {{- if .Values.lifecycleHooks }}
           lifecycle: {{- include "harnesscommon.tplvalues.render" (dict "value" .Values.lifecycleHooks "context" $) | nindent 12 }}
         {{- end }}
