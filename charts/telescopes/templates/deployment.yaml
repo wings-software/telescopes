@@ -41,14 +41,7 @@ spec:
         - name: TELESCOPES_BASEPATH
           value: /{{ $basePath }}
         {{- end }}
-        command:
-        - "/bin/sh"
-        - "-ecx"
-        - |
-          /bin/telescopes \
-          --listen-address=0.0.0.0:{{ .Values.service.internalPort }} \
-          --log-level={{ .Values.app.logLevel }} \
-          --cloudinfo-address={{ .Values.app.cloudInfoAddress }} \
+
         {{- if .Values.app.devMode }}
         {{- if .Values.app.vaultAddress }}
           --vault-address={{ .Values.app.vaultAddress }} \
