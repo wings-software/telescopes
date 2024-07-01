@@ -118,3 +118,21 @@ lifecycleHooks: {}
 #   preStop:
 #     exec:
 #       command:
+
+rbac:
+  rules: []
+
+secrets:
+  default:
+    key2: ""
+  secretManagement:
+    externalSecretsOperator:
+      - secretStore:
+          name: ""
+          kind: ""
+        remoteKeys: 
+          key2:
+            name: ""
+            property: ""
+
+config: {}
