@@ -7,6 +7,9 @@ global:
   commonLabels: {}
   ingress:
     enabled: false
+    disableHostInIngress: false
+    pathPrefix: ""
+    pathType: ""
     className: harness
     hosts:
       - my-host.example.org
@@ -73,10 +76,22 @@ service:
 
 virtualService:
   annotations: {}
+  objects:
+    - pathMatchType: prefix
+      pathRewrite: "/"
+      paths:
+        - path: '{{ .Values.global.istio.virtualService.pathPrefix }}/ccm/recommendations/'
+        - path: '{{ .Values.global.istio.virtualService.pathPrefix }}/ccm/recommendations'
 
 ingress:
   annotations: {}
   className: nginx
+  objects:
+    - annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: /$2
+        nginx.ingress.kubernetes.io/use-regex: "true"
+      paths:
+      - path: '{{ .Values.global.ingress.pathPrefix }}/ccm/recommendations(/|$)(.*)'
 
 autoscaling:
   enabled: false
@@ -130,7 +145,7 @@ secrets:
       - secretStore:
           name: ""
           kind: ""
-        remoteKeys: 
+        remoteKeys:
           key2:
             name: ""
             property: ""
