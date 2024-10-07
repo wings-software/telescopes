@@ -94,6 +94,7 @@ ingress:
         nginx.ingress.kubernetes.io/use-regex: "true"
       paths:
       - path: '{{ .Values.global.ingress.pathPrefix }}/ccm/recommendations(/|$)(.*)'
+      - path: '/ccm/recommendations(/|$)(.*)'
 
 autoscaling:
   enabled: false
