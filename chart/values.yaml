@@ -2,6 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 global:
+  autoscaling:
+    enabled: false
   loadbalancerURL: "https://test"
   commonAnnotations: {}
   commonLabels: {}
@@ -95,8 +97,6 @@ ingress:
 
 autoscaling:
   enabled: false
-  minReplicas: 1
-  maxReplicas: 100
   targetCPU: ""
   targetMemory: ""
 
