@@ -2,6 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 global:
+  pdb:
+    create: false
   autoscaling:
     enabled: false
   loadbalancerURL: "https://test"
@@ -151,3 +153,6 @@ secrets:
             property: ""
 
 config: {}
+
+pdb:
+  create: false
