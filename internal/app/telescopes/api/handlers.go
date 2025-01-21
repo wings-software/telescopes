@@ -26,6 +26,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+
 // swagger:operation POST /recommender/provider/{provider}/service/{service}/region/{region}/cluster recommend recommendCluster
 // ---
 // summary: Provides a recommended set of node pools on a given provider in a specific region.
