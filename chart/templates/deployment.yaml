@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: telescopes
+  name: {{ include "telescopes.name" . }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "telescopes.labels" . | nindent 4 }}
@@ -12,8 +12,14 @@ metadata:
   annotations: {{- include "harnesscommon.tplvalues.render" ( dict "value" .Values.global.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.progressDeadlineSeconds }}
+  progressDeadlineSeconds: {{ .Values.progressDeadlineSeconds }}
+  {{- end }}
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- if .Values.updateStrategy }}
+  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
   {{- end }}
   selector:
     matchLabels:
@@ -30,7 +36,7 @@ spec:
         {{- end }}
       {{- end }}
       labels:
-        app: telescopes
+        app: {{ include "telescopes.name" . }}
         {{- include "telescopes.selectorLabels" . | nindent 8 }}
         {{- if .Values.global.commonLabels }}
         {{- include "harnesscommon.tplvalues.render" ( dict "value" .Values.global.commonLabels "context" $ ) | nindent 8 }}
@@ -44,22 +50,17 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: telescopes
+        - name: {{ include "telescopes.name" . }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global) }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
           - configMapRef:
-              name: telescopes
+              name: {{ include "telescopes.name" . }}
           env:
             {{- include "harnesscommon.renderSecretsAsEnvironmentVariables" (dict "ctx" $) | indent 10}}
-          startupProbe:
-            httpGet:
-              path: /status
-              port: 9090
-            failureThreshold: 300
-            periodSeconds: 1
+          {{- toYaml .Values.probes | nindent 10 }}
           command:
           - "/bin/sh"
           - "-ecx"
@@ -83,7 +84,7 @@ spec:
               - key: app
                 operator: In
                 values:
-                - telescopes
+                - {{ include "telescopes.name" . }}
             topologyKey: "kubernetes.io/hostname"
       {{- with .Values.nodeSelector }}
       nodeSelector:

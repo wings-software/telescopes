@@ -1,6 +1,15 @@
 # Default values for telescopes
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+
+probes:
+  startupProbe:
+    httpGet:
+      path: /status
+      port: 9090
+    failureThreshold: 300
+    periodSeconds: 1
+
 global:
   autoscaling:
     enabled: false
@@ -33,6 +42,14 @@ global:
   imagePullSecrets: []
 
 replicaCount: 1
+
+progressDeadlineSeconds: 600
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 100%
+    maxUnavailable: 0
 
 java:
   memory: "4096m"
