@@ -102,7 +102,6 @@ virtualService:
       pathRewrite: "/"
       paths:
         - path: '{{ .Values.global.istio.virtualService.pathPrefix }}/ccm/recommendations/'
-        - path: '{{ .Values.global.istio.virtualService.pathPrefix }}/ccm/recommendations'
 
 ingress:
   annotations: {}
