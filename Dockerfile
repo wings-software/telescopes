@@ -1,11 +1,11 @@
 # build stage
-FROM us-west1-docker.pkg.dev/gar-setup/docker/harness/ubi8/go1:1.22 AS builder
+FROM us-west1-docker.pkg.dev/gar-setup/docker/ubi9/go1:1.24 AS builder
 ENV GOFLAGS="-mod=readonly"
 
 #RUN apt-get update && apt-get install -y ca-certificates make git curl mercurial
 #RUN apk add --update --no-cache ca-certificates make git curl mercurial
 USER root
-RUN microdnf update && microdnf install -y ca-certificates make git curl && microdnf clean all
+RUN microdnf update && microdnf install -y ca-certificates make git && microdnf clean all
 
 RUN mkdir -p /build
 WORKDIR /build
@@ -17,7 +17,7 @@ COPY . /build
 RUN BINARY_NAME=telescopes make build-release
 
 # FROM alpine:3.14.0
-FROM us-west1-docker.pkg.dev/gar-setup/docker/harness/ubi8/go1:1.22
+FROM us-west1-docker.pkg.dev/gar-setup/docker/ubi9/go1:1.24
 USER root
 # RUN microdnf install yum
 # RUN apk add --update --no-cache ca-certificates tzdata bash curl
