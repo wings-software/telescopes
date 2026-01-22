@@ -1,6 +1,6 @@
 module github.com/banzaicloud/telescopes
 
-go 1.20
+go 1.24
 
 require (
 	github.com/antihax/optional v0.0.0-20180407024304-ca021399b1a6
@@ -17,7 +17,7 @@ require (
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/moogar0880/problems v0.0.0-20180130003543-91791093a28a
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.8.2
@@ -46,7 +46,6 @@ require (
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/hashicorp/hcl v1.0.1-0.20201015184941-809e678c39ec // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/magiconair/properties v1.8.0 // indirect

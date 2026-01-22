@@ -5,7 +5,7 @@ ENV GOFLAGS="-mod=readonly"
 #RUN apt-get update && apt-get install -y ca-certificates make git curl mercurial
 #RUN apk add --update --no-cache ca-certificates make git curl mercurial
 USER root
-RUN microdnf update && microdnf install -y ca-certificates make git && microdnf clean all
+RUN microdnf update -y gnupg2 tar libxml2 libarchive sqlite && microdnf install -y ca-certificates make git && microdnf clean all
 
 RUN mkdir -p /build
 WORKDIR /build
