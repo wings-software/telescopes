@@ -38,7 +38,7 @@ const (
 // ClusterRecommender is the main entry point for cluster recommendation
 type ClusterRecommender interface {
 	// RecommendCluster performs recommendation based on the provided arguments
-	RecommendCluster(provider string, service string, region string, req SingleClusterRecommendationReq, layoutDesc []NodePoolDesc) (*ClusterRecommendationResp, error)
+	RecommendCluster(provider string, service string, region string, req SingleClusterRecommendationReq, layoutDesc []NodePoolDesc, correlationID string) (*ClusterRecommendationResp, error)
 
 	// RecommendClusterScaleOut performs recommendation for an existing layout's scale out
 	RecommendClusterScaleOut(provider string, service string, region string, req ClusterScaleoutRecommendationReq) (*ClusterRecommendationResp, error)
