@@ -84,7 +84,8 @@ func (r *RouteHandler) recommendCluster() gin.HandlerFunc {
 			return
 		}
 
-		response, err := r.engine.RecommendCluster(pathParams.Provider, pathParams.Service, pathParams.Region, req, nil)
+		correlationID := c.GetString(log.ContextKey)
+		response, err := r.engine.RecommendCluster(pathParams.Provider, pathParams.Service, pathParams.Region, req, nil, correlationID)
 		if err != nil {
 			errorresponse.NewErrorResponder(c).Respond(err)
 			return

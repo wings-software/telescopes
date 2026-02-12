@@ -43,9 +43,17 @@ func NewEngine(log logur.Logger, ciSource CloudInfoSource, vmSelector VmRecommen
 	}
 }
 
+func (e *Engine) withCorrelationID(correlationID string) logur.Logger {
+	if correlationID == "" {
+		return e.log
+	}
+	return logur.WithFields(e.log, map[string]interface{}{"correlation-id": correlationID})
+}
+
 // RecommendCluster performs recommendation based on the provided arguments
-func (e *Engine) RecommendCluster(provider string, service string, region string, req SingleClusterRecommendationReq, layoutDesc []NodePoolDesc) (*ClusterRecommendationResp, error) {
-	e.log.Info(fmt.Sprintf("recommending cluster configuration. request: [%#v]", req))
+func (e *Engine) RecommendCluster(provider string, service string, region string, req SingleClusterRecommendationReq, layoutDesc []NodePoolDesc, correlationID string) (*ClusterRecommendationResp, error) {
+	logger := e.withCorrelationID(correlationID)
+	logger.Info("recommending cluster configuration", map[string]interface{}{"request": fmt.Sprintf("%#v", req)})
 
 	allProducts, err := e.ciSource.GetProductDetails(provider, service, region)
 	if err != nil {
@@ -71,12 +79,12 @@ func (e *Engine) RecommendCluster(provider string, service string, region string
 		}
 	}
 
-	cheapestMaster, err := e.recommendMaster(provider, service, req, allProducts, layoutDesc)
+	cheapestMaster, err := e.recommendMaster(provider, service, req, allProducts, layoutDesc, correlationID)
 	if err != nil {
 		return nil, err
 	}
 
-	cheapestNodePoolSet, err := e.getCheapestNodePoolSet(provider, req, layoutDesc, allProducts)
+	cheapestNodePoolSet, err := e.getCheapestNodePoolSet(provider, req, layoutDesc, allProducts, correlationID)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +118,7 @@ func (e *Engine) populateAllocatableResourceValues(provider string, service stri
 	return nil
 }
 
-func (e *Engine) recommendMaster(provider, service string, req SingleClusterRecommendationReq, allProducts []VirtualMachine, layoutDesc []NodePoolDesc) (*NodePool, error) {
+func (e *Engine) recommendMaster(provider, service string, req SingleClusterRecommendationReq, allProducts []VirtualMachine, layoutDesc []NodePoolDesc, correlationID string) (*NodePool, error) {
 	if layoutDesc != nil {
 		e.log.Debug("there is an existing layout, does not require a master recommendation")
 		return nil, nil
@@ -143,7 +151,7 @@ func (e *Engine) recommendMaster(provider, service string, req SingleClusterReco
 			}
 		}
 
-		masterNodePool, err := e.masterNodeRecommendation(provider, req, allProducts)
+		masterNodePool, err := e.masterNodeRecommendation(provider, req, allProducts, correlationID)
 		if err != nil {
 			return nil, err
 		}
@@ -151,7 +159,7 @@ func (e *Engine) recommendMaster(provider, service string, req SingleClusterReco
 		return masterNodePool, nil
 
 	case "ack":
-		masterNodePool, err := e.masterNodeRecommendation(provider, req, allProducts)
+		masterNodePool, err := e.masterNodeRecommendation(provider, req, allProducts, correlationID)
 		if err != nil {
 			return nil, err
 		}
@@ -197,7 +205,7 @@ func (e *Engine) recommendMaster(provider, service string, req SingleClusterReco
 	}
 }
 
-func (e *Engine) masterNodeRecommendation(provider string, req SingleClusterRecommendationReq, allProducts []VirtualMachine) (*NodePool, error) {
+func (e *Engine) masterNodeRecommendation(provider string, req SingleClusterRecommendationReq, allProducts []VirtualMachine, correlationID string) (*NodePool, error) {
 	request := SingleClusterRecommendationReq{
 		ClusterRecommendationReq: ClusterRecommendationReq{
 			SumCpu:      2,
@@ -210,7 +218,7 @@ func (e *Engine) masterNodeRecommendation(provider string, req SingleClusterReco
 		IncludeTypes: req.IncludeTypes,
 	}
 
-	cheapestMaster, err := e.getCheapestNodePoolSet(provider, request, nil, allProducts)
+	cheapestMaster, err := e.getCheapestNodePoolSet(provider, request, nil, allProducts, correlationID)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +233,7 @@ func (e *Engine) masterNodeRecommendation(provider string, req SingleClusterReco
 	return master, nil
 }
 
-func (e *Engine) getCheapestNodePoolSet(provider string, req SingleClusterRecommendationReq, layoutDesc []NodePoolDesc, allProducts []VirtualMachine) ([]NodePool, error) {
+func (e *Engine) getCheapestNodePoolSet(provider string, req SingleClusterRecommendationReq, layoutDesc []NodePoolDesc, allProducts []VirtualMachine, correlationID string) ([]NodePool, error) {
 	desiredCpu := req.SumCpu
 	desiredMem := req.SumMem
 	desiredOdPct := req.OnDemandPct
@@ -263,27 +271,45 @@ func (e *Engine) getCheapestNodePoolSet(provider string, req SingleClusterRecomm
 		// Filtering recommended Vms based on request parameters (minCpu and minMem)
 		odVms, spotVms = e.vmSelector.FilterVmsBasedOnReqParams(attr, req, odVms, spotVms)
 
+		logger := e.withCorrelationID(correlationID)
 		if (len(odVms) == 0 && req.OnDemandPct > 0) || (len(spotVms) == 0 && req.OnDemandPct < 100) {
-			e.log.Debug("no vms with the requested resources found", map[string]interface{}{"attribute": attr})
+			logger.Debug("no vms with the requested resources found", map[string]interface{}{"attribute": attr})
 			// skip the nodepool creation, go to the next attr
 			continue
 		}
-		e.log.Debug("recommended vms", map[string]interface{}{"attribute": attr,
+		logger.Debug("recommended vms", map[string]interface{}{"attribute": attr,
 			"odVmsCount": len(odVms), "odVmsValues": odVms, "spotVmsCount": len(spotVms), "spotVmsValues": spotVms})
 
 		nps := e.nodePoolSelector.RecommendNodePools(attr, req, layout, odVms, spotVms)
 
-		e.log.Debug(fmt.Sprintf("recommended node pools for [%s]: count:[%d] , values: [%#v]", attr, len(nps), nps))
+		logger.Debug(fmt.Sprintf("recommended node pools for [%s]: count:[%d] , values: [%#v]", attr, len(nps), nps))
 
 		nodePools[attr] = nps
 	}
 
 	if len(nodePools) == 0 {
-		e.log.Debug(fmt.Sprintf("No node pool could be recommended with the specified tuning parameters: %#v", req))
-		return nil, emperror.With(errors.New("No node pool could be recommended with the specified tuning parameters"), RecommenderErrorTag)
+		logger := e.withCorrelationID(correlationID)
+		logger.Info("No node pools could be recommended with the specified tuning parameters", map[string]interface{}{"request": fmt.Sprintf("%#v", req)})
+		errMsg := "No node pools could be recommended with the specified tuning parameters"
+		if len(req.IncludeTypes) > 0 {
+			availableTypes := make(map[string]bool)
+			for _, vm := range allProducts {
+				availableTypes[vm.Type] = true
+			}
+			var missingTypes []string
+			for _, requestedType := range req.IncludeTypes {
+				if !availableTypes[requestedType] {
+					missingTypes = append(missingTypes, requestedType)
+				}
+			}
+			if len(missingTypes) > 0 {
+				errMsg = fmt.Sprintf("No node pool could be recommended. The following VM types in includeTypes are not available in this region/service: %v", missingTypes)
+			}
+		}
+		return nil, emperror.With(errors.New(errMsg), RecommenderErrorTag)
 	}
 
-	return e.findCheapestNodePoolSet(nodePools), nil
+	return e.findCheapestNodePoolSet(nodePools, correlationID), nil
 }
 
 // RecommendClusterScaleOut performs recommendation for an existing layout's scale out
@@ -313,7 +339,7 @@ func (e *Engine) RecommendClusterScaleOut(provider string, service string, regio
 		Zone:         req.Zone,
 	}
 
-	return e.RecommendCluster(provider, service, region, clReq, req.ActualLayout)
+	return e.RecommendCluster(provider, service, region, clReq, req.ActualLayout, "")
 }
 
 // RecommendMultiCluster performs recommendation
@@ -373,7 +399,7 @@ func (e *Engine) recommendCluster(provider, service, region string, req MultiClu
 				IncludeTypes:             req.Includes[provider][service],
 				Zone:                     zone,
 			}
-			zoneResp, err := e.RecommendCluster(provider, service, region, request, nil)
+			zoneResp, err := e.RecommendCluster(provider, service, region, request, nil, "")
 			if err != nil {
 				e.log.Warn("No node pool could be recommended with the specified tuning parameters")
 				continue
@@ -389,7 +415,7 @@ func (e *Engine) recommendCluster(provider, service, region string, req MultiClu
 			IncludeTypes:             req.Includes[provider][service],
 		}
 
-		response, err = e.RecommendCluster(provider, service, region, request, nil)
+		response, err = e.RecommendCluster(provider, service, region, request, nil, "")
 		if err != nil {
 			e.log.Warn("No node pool could be recommended with the specified tuning parameters")
 		}
@@ -505,8 +531,9 @@ func findResponseSum(zone string, nodePoolSet []NodePool) ClusterRecommendationA
 }
 
 // findCheapestNodePoolSet looks up the "cheapest" node pool from set of only 2 nodePools cpu and memory wise.
-func (e *Engine) findCheapestNodePoolSet(nodePoolSets map[string][]NodePool) []NodePool {
-	e.log.Info("finding cheapest pool set...")
+func (e *Engine) findCheapestNodePoolSet(nodePoolSets map[string][]NodePool, correlationID string) []NodePool {
+	logger := e.withCorrelationID(correlationID)
+	logger.Info("finding cheapest pool set...")
 	var cheapestNpSet []NodePool
 	var bestPrice float64
 
@@ -520,11 +547,11 @@ func (e *Engine) findCheapestNodePoolSet(nodePoolSets map[string][]NodePool) []N
 			sumCpus += np.GetSum(Cpu)
 			sumMem += np.GetSum(Memory)
 		}
-		e.log.Debug("checking node pool",
+		logger.Debug("checking node pool",
 			map[string]interface{}{"attribute": attr, "cpu": sumCpus, "memory": sumMem, "price": sumPrice, "nodePools": nodePools})
 
 		if bestPrice == 0 || bestPrice > sumPrice {
-			e.log.Debug("cheaper node pool set is found", map[string]interface{}{"price": sumPrice})
+			logger.Debug("cheaper node pool set is found", map[string]interface{}{"price": sumPrice})
 			bestPrice = sumPrice
 			cheapestNpSet = nodePools
 		}

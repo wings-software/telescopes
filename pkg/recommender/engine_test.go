@@ -102,11 +102,13 @@ func (v *dummyVms) RecommendVms(provider string, vms []VirtualMachine, attr stri
 }
 
 func (v *dummyVms) FindVmsWithAttrValues(attr string, req SingleClusterRecommendationReq, layoutDesc []NodePoolDesc, allProducts []VirtualMachine) ([]VirtualMachine, error) {
-	return nil, nil
+	// Return all products for testing
+	return allProducts, nil
 }
 
 func (v *dummyVms) FilterVmsBasedOnReqParams(attr string, req SingleClusterRecommendationReq, odVms []VirtualMachine, spotVms []VirtualMachine) ([]VirtualMachine, []VirtualMachine) {
-	return nil, nil
+	// Return VMs as-is for testing
+	return odVms, spotVms
 }
 
 type dummyNodePools struct {
@@ -203,7 +205,7 @@ func TestEngine_RecommendCluster(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			engine := NewEngine(logur.NewTestLogger(), test.ciSource, test.vms, test.np)
 
-			test.check(engine.RecommendCluster("dummyProvider", "dummyService", "dummyRegion", test.request, nil))
+			test.check(engine.RecommendCluster("dummyProvider", "dummyService", "dummyRegion", test.request, nil, ""))
 		})
 	}
 }
@@ -272,7 +274,7 @@ func TestEngine_findCheapestNodePoolSet(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			engine := NewEngine(logur.NewTestLogger(), nil, test.vms, test.np)
-			test.check(engine.findCheapestNodePoolSet(test.nodePools))
+			test.check(engine.findCheapestNodePoolSet(test.nodePools, ""))
 		})
 	}
 }
