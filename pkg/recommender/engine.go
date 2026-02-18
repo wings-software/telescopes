@@ -290,7 +290,7 @@ func (e *Engine) getCheapestNodePoolSet(provider string, req SingleClusterRecomm
 	if len(nodePools) == 0 {
 		logger := e.withCorrelationID(correlationID)
 		logger.Info("No node pools could be recommended with the specified tuning parameters", map[string]interface{}{"request": fmt.Sprintf("%#v", req)})
-		errMsg := "No node pools could be recommended with the specified tuning parameters"
+		errMsg := "No node pool could be recommended with the specified tuning parameters"
 		if len(req.IncludeTypes) > 0 {
 			availableTypes := make(map[string]bool)
 			for _, vm := range allProducts {
@@ -375,7 +375,7 @@ func (e *Engine) RecommendMultiCluster(req MultiClusterRecommendationReq) (map[s
 	}
 
 	if len(respPerService) == 0 {
-		return nil, emperror.With(errors.New("No node pools could be recommended with the specified tuning parameters"), RecommenderErrorTag)
+		return nil, emperror.With(errors.New("No node pool could be recommended with the specified tuning parameters"), RecommenderErrorTag)
 	}
 
 	return respPerService, nil
