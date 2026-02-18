@@ -55,6 +55,7 @@ func (p *dummyProducts) GetZones(prv, svc, reg string) ([]string, error) {
 func (p *dummyProducts) GetProductDetails(provider string, service string, region string) ([]VirtualMachine, error) {
 	return []VirtualMachine{
 		{
+			Type:          "test-product-1",
 			Cpus:          16,
 			Mem:           42,
 			OnDemandPrice: 3,
@@ -73,32 +74,52 @@ type dummyVms struct {
 }
 
 func (v *dummyVms) RecommendVms(provider string, vms []VirtualMachine, attr string, req SingleClusterRecommendationReq, layout []NodePool) ([]VirtualMachine, []VirtualMachine, error) {
-	return nil, []VirtualMachine{
+	// When layout is nil, both odVms and spotVms should be the same (matching real implementation)
+	recommendedVms := []VirtualMachine{
 		{
-			Cpus:          16,
-			Mem:           42,
-			AvgPrice:      2,
-			OnDemandPrice: 3,
+			Type:            "test-vm-1",
+			Cpus:            16,
+			Mem:             42,
+			AllocatableCpus: 16,
+			AllocatableMem:  42,
+			AvgPrice:        2,
+			OnDemandPrice:   3,
 		},
 		{
-			Cpus:          16,
-			Mem:           42,
-			AvgPrice:      2,
-			OnDemandPrice: 3,
+			Type:            "test-vm-2",
+			Cpus:            16,
+			Mem:             42,
+			AllocatableCpus: 16,
+			AllocatableMem:  42,
+			AvgPrice:        2,
+			OnDemandPrice:   3,
 		},
 		{
-			Cpus:          16,
-			Mem:           42,
-			AvgPrice:      2,
-			OnDemandPrice: 4,
+			Type:            "test-vm-3",
+			Cpus:            16,
+			Mem:             42,
+			AllocatableCpus: 16,
+			AllocatableMem:  42,
+			AvgPrice:        2,
+			OnDemandPrice:   4,
 		},
 		{
-			Cpus:          16,
-			Mem:           42,
-			AvgPrice:      2,
-			OnDemandPrice: 4,
+			Type:            "test-vm-4",
+			Cpus:            16,
+			Mem:             42,
+			AllocatableCpus: 16,
+			AllocatableMem:  42,
+			AvgPrice:        2,
+			OnDemandPrice:   4,
 		},
-	}, nil
+	}
+
+	// Match real implementation behavior: when layout is nil, both slices are the same
+	if layout == nil {
+		return recommendedVms, recommendedVms, nil
+	}
+
+	return recommendedVms, recommendedVms, nil
 }
 
 func (v *dummyVms) FindVmsWithAttrValues(attr string, req SingleClusterRecommendationReq, layoutDesc []NodePoolDesc, allProducts []VirtualMachine) ([]VirtualMachine, error) {
