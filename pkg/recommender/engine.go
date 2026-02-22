@@ -303,7 +303,8 @@ func (e *Engine) getCheapestNodePoolSet(provider string, req SingleClusterRecomm
 				}
 			}
 			if len(missingTypes) > 0 {
-				errMsg = fmt.Sprintf("No node pool could be recommended. The following VM types in includeTypes are not available in this region/service: %v", missingTypes)
+				detailedMsg := fmt.Sprintf("No node pool could be recommended with the specified tuning parameters. The following VM types in includeTypes are not available in this region/service: %v", missingTypes)
+				logger.Warn(detailedMsg, map[string]interface{}{"missingTypes": missingTypes})
 			}
 		}
 		return nil, emperror.With(errors.New(errMsg), RecommenderErrorTag)
