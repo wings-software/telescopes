@@ -78,6 +78,7 @@ test: SHELL = /bin/bash
 test: bin/gotestsum ## Run tests
 	@mkdir -p ${BUILD_DIR}/test_results/${TEST_REPORT}
 	bin/gotestsum --no-summary=skipped --junitfile ${BUILD_DIR}/test_results/${TEST_REPORT}/${TEST_REPORT_NAME} --format ${TEST_FORMAT} -- $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
+	go test -timeout 30m -cover -coverprofile=coverage.out ./...
 
 .PHONY: test-all
 test-all: ## Run all tests
