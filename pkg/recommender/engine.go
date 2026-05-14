@@ -290,7 +290,6 @@ func (e *Engine) getCheapestNodePoolSet(provider string, req SingleClusterRecomm
 	if len(nodePools) == 0 {
 		logger := e.withCorrelationID(correlationID)
 		logger.Info("No node pools could be recommended with the specified tuning parameters", map[string]interface{}{"request": fmt.Sprintf("%#v", req)})
-		errMsg := "No node pool could be recommended with the specified tuning parameters"
 		if len(req.IncludeTypes) > 0 {
 			availableTypes := make(map[string]bool)
 			for _, vm := range allProducts {
@@ -303,11 +302,10 @@ func (e *Engine) getCheapestNodePoolSet(provider string, req SingleClusterRecomm
 				}
 			}
 			if len(missingTypes) > 0 {
-				detailedMsg := fmt.Sprintf("No node pool could be recommended with the specified tuning parameters. The following VM types in includeTypes are not available in this region/service: %v", missingTypes)
-				logger.Warn(detailedMsg, map[string]interface{}{"missingTypes": missingTypes})
+				logger.Warn(fmt.Sprintf("The following VM types in includeTypes are not available in this region/service: %v", missingTypes), map[string]interface{}{"missingTypes": missingTypes})
 			}
 		}
-		return nil, emperror.With(errors.New(errMsg), RecommenderErrorTag)
+		return []NodePool{}, nil
 	}
 
 	return e.findCheapestNodePoolSet(nodePools, correlationID), nil
@@ -376,7 +374,8 @@ func (e *Engine) RecommendMultiCluster(req MultiClusterRecommendationReq) (map[s
 	}
 
 	if len(respPerService) == 0 {
-		return nil, emperror.With(errors.New("No node pool could be recommended with the specified tuning parameters"), RecommenderErrorTag)
+		e.log.Info("No node pools could be recommended for any provider/service with the specified tuning parameters")
+		return respPerService, nil
 	}
 
 	return respPerService, nil

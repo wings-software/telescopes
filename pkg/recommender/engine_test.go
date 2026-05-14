@@ -111,6 +111,20 @@ func (v *dummyVms) FilterVmsBasedOnReqParams(attr string, req SingleClusterRecom
 	return odVms, spotVms
 }
 
+type emptyVms struct{}
+
+func (v *emptyVms) RecommendVms(provider string, vms []VirtualMachine, attr string, req SingleClusterRecommendationReq, layout []NodePool) ([]VirtualMachine, []VirtualMachine, error) {
+	return []VirtualMachine{}, []VirtualMachine{}, nil
+}
+
+func (v *emptyVms) FindVmsWithAttrValues(attr string, req SingleClusterRecommendationReq, layoutDesc []NodePoolDesc, allProducts []VirtualMachine) ([]VirtualMachine, error) {
+	return allProducts, nil
+}
+
+func (v *emptyVms) FilterVmsBasedOnReqParams(attr string, req SingleClusterRecommendationReq, odVms []VirtualMachine, spotVms []VirtualMachine) ([]VirtualMachine, []VirtualMachine) {
+	return odVms, spotVms
+}
+
 type dummyNodePools struct {
 	// test case id to drive the behaviour
 	TcId string
@@ -197,6 +211,27 @@ func TestEngine_RecommendCluster(t *testing.T) {
 				assert.Nil(t, err, "the error should be nil")
 				assert.Equal(t, float64(42), resp.Accuracy.RecMem)
 				assert.Equal(t, float64(16), resp.Accuracy.RecCpu)
+			},
+		},
+		{
+			name: "no matching VMs returns empty nodePools not error",
+			vms:  &emptyVms{},
+			np:   &dummyNodePools{},
+			request: SingleClusterRecommendationReq{
+				ClusterRecommendationReq: ClusterRecommendationReq{
+					MinNodes:    3,
+					MaxNodes:    3,
+					SumMem:      4,
+					SumCpu:      4,
+					OnDemandPct: 100,
+				},
+				IncludeTypes: []string{"nonexistent-type"},
+			},
+			ciSource: &dummyProducts{},
+			check: func(resp *ClusterRecommendationResp, err error) {
+				assert.Nil(t, err, "should not return error when no VMs match")
+				assert.NotNil(t, resp, "response should not be nil")
+				assert.Empty(t, resp.NodePools, "nodePools should be empty")
 			},
 		},
 	}
