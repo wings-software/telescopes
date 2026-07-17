@@ -126,18 +126,21 @@ func GinMiddlewareLogger(logger logur.Logger, notlogged ...string) gin.HandlerFu
 
 			entry := logur.WithFields(logger, fields)
 
+			msg := "ginLogger"
 			if len(c.Errors) > 0 {
-				entry.Error(c.Errors.ByType(gin.ErrorTypePrivate).String())
-			} else {
-				msg := "ginLogger"
-
-				if statusCode >= http.StatusInternalServerError {
-					entry.Error(msg)
-				} else if statusCode >= http.StatusBadRequest {
-					entry.Warn(msg)
+				if private := c.Errors.ByType(gin.ErrorTypePrivate).String(); private != "" {
+					msg = private
 				} else {
-					entry.Info(msg)
+					msg = c.Errors.String()
 				}
+			}
+
+			if statusCode >= http.StatusInternalServerError {
+				entry.Error(msg)
+			} else if statusCode >= http.StatusBadRequest {
+				entry.Warn(msg)
+			} else {
+				entry.Info(msg)
 			}
 		}
 	}
