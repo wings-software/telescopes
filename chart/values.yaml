@@ -168,7 +168,8 @@ secrets:
             name: ""
             property: ""
 
-config: {}
+config:
+  FIPS_ENABLED: '{{ .Values.global.fips }}'
 
 pdb:
   create: false
