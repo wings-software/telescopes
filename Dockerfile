@@ -5,7 +5,7 @@ FROM harness0.harness.io/oci/docker_artifacts/hhios/go1:1.26-fips AS builder
 ENV GOFLAGS="-mod=readonly"
 
 USER root
-RUN git --version && make --version | head -1
+RUN git --version && make --version
 
 RUN mkdir -p /build
 WORKDIR /build
